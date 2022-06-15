@@ -8,6 +8,7 @@ from torch.utils.data import Dataset, SequentialSampler, BatchSampler
 from MLP import MLP
 import copy
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 class TableDataset(Dataset):
 
@@ -23,7 +24,7 @@ class TableDataset(Dataset):
 
 
 batch_size = 1000
-n_epoch = 1000
+n_epoch = 100
 
 data = h5py.File("/mnt/home/apricewhelan/projects/gaia-scratch/data/gaiadr3-apogee-bprp-Xy.hdf5","r")
 
@@ -54,7 +55,7 @@ train_dataloader = torch.utils.data.DataLoader(train_data, batch_size=None, samp
 sampler = BatchSampler(SequentialSampler(val_data), batch_size, drop_last=False)
 val_dataloader = torch.utils.data.DataLoader(val_data, batch_size=None, sampler=sampler)
 
-model = MLP(22,6,128,5)
+model = MLP(23,6,128,5)
 model.train().cuda().float()
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
@@ -101,6 +102,9 @@ def predict(x):
 
 pred_y = predict(x_scale)
 error = pred_y - Y_
+
+traced_model = torch.jit.trace(model, x_scale).cpu()
+traced_model.save("serialized_MLP.pt")
 
 def plot_corner(X,y,label_idx = 0):
     feature_idx = np.arange(0, 5)
