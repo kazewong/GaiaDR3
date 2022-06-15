@@ -1,0 +1,27 @@
+import h5py
+from annoy import AnnoyIndex
+import random
+
+f = 40  # Length of item vector that will be indexed
+
+t = AnnoyIndex(f, 'angular')
+for i in range(1000):
+    v = [random.gauss(0, 1) for z in range(f)]
+    t.add_item(i, v)
+
+t.build(10) # 10 trees
+t.save('test.ann')
+
+# ...
+
+u = AnnoyIndex(f, 'angular')
+u.load('test.ann') # super fast, will just mmap the file
+print(u.get_nns_by_item(0, 1000)) # will find the 1000 nearest neighbors
+
+data = h5py.File("/mnt/home/apricewhelan/projects/gaia-scratch/data/gaiadr3-apogee-bprp-Xy.hdf5","r")
+
+t = AnnoyIndex(f, 'angular')
+X_ = data['X'][:]
+t.b
+
+Y_ = data['y'][:]
