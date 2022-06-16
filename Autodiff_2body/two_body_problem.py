@@ -20,7 +20,7 @@ def potential(x1, m1, m2, x2):
 
 grad_potential = jax.grad(potential)
 
-
+@jax.jit
 def simulator_step(m1, m2, x1, x2, v1, v2, dt=0.1):
     v_half_1 = v1 + 0.5*grad_potential(x1, m1, m2, x2)*dt/m1
     x_new_1 = x1 + v_half_1*dt
@@ -43,12 +43,14 @@ m2 = 1.
 x1 = np.array([0.,0.,0.])
 x2 = np.array([10.,0.,0.])
 v1 = np.array([0.,0.,0.])
-v2 = np.array([0.,1.,0.])
-step = 100
-max_t = 10
+v2 = np.array([0.,1.42,0.])
+step = 500
+max_t = 200
 
 data = np.array(simulator(m1, m2, x1, x2, v1, v2, step, max_t))
 
 def loss(m1, m2, x1, x2, v1, v2, step, max_t):
     x2_array = np.array(simulator(m1, m2, x1, x2, v1, v2, step, max_t))
-    return np.sum((x2_array-x2)**2)
+    return np.sum((x2_array-data)**2)
+
+dLdt = jax.grad(loss,7)(m1, m2, x1, x2, v1, v2, step, max_t+0.1)
